@@ -1,0 +1,683 @@
+<html lang="en">
+<head>
+	<title>S_Charts</title>
+   	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+   	<script src="http://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/highcharts-more.js"></script>
+	<script src="http://code.highcharts.com/modules/exporting.js"></script>
+	<script src="http://dweet.io/client/dweet.io.min.js"></script>
+	<style>
+		h3{
+			color:purple;
+		}
+	</style>
+</head>
+
+<body>
+	<!--First column-->
+	<div class="jumbotron text-center">
+	  <h1>IOT Principles CA1</h1>
+	  <p>Live data updated from rasp+grove pi.</p> 
+	  <br/>
+	  <p style='color:purple'>Sarah Yun Tiong - x14111187</p> 
+	</div>
+	
+	<!--Start of 4-container-->
+	<div class="container">
+	  <div class="row">
+		<div class="col-sm-6">
+		  <h3>Temperature</h3> <!--Temperature chart - -->
+		  <div id="containerTemperature" style="width: 400px; height: 400px; margin: 0 auto"></div>	
+		</div>
+		<div class="col-sm-6">
+		  <h3>Humidity</h3> <!--Humidity chart - -->
+		  <div id="containerHumidity" style="width: 400px; height: 400px; margin: 0 auto"></div>		
+		</div>
+	  </div>
+	  <div class="row">
+		<div class="col-sm-6">
+		  <h3>Button status</h3> <!--Button status chart - -->
+		  <div id="containerButton" style="width: 400px; height: 400px; margin: 0 auto"></div>
+		</div>
+		<div class="col-sm-6">
+		  <h3>LED status</h3> <!--Something's chart - -->
+		  <div id="containerLed" style="width: 400px; height: 400px; margin: 0 auto"></div>
+		</div>
+	  </div>
+	</div>
+
+	<!--Scripting to retrieve data-->
+	<script language="JavaScript">
+		
+		//Array to store sensor data
+		var temperatureData = []
+		var humidityData = []
+		var buttonData = []
+		var ledData = []
+
+		//Array to store dweet creation time
+		array_for_cats = []
+		
+		//Global array for local storage
+		var localDataTemperature = []
+		var localDataHumidity = []
+		var localDataButton = []
+		var localDataLed = []
+		
+		//Create charts
+		//Reference https://www.highcharts.com/demo
+		//Reference moodle sample code
+		$(document).ready(function() {
+		   //My Dweet thing's name
+		   var name = 'TrackingDV'
+			
+		   //#######--------------------------1st CHART--------------------------#######//
+		   //Temperature chart
+		   var temChart = {
+			  type: 'spline', 
+			  animation: Highcharts.svg, 
+			  marginRight: 10
+		   };
+		   var title = {
+			  text: 'Pi Temperature'   
+		   };   
+		   var xAxis = {
+			  type: 'datetime',
+			  tickPixelInterval: 150,
+			  labels: {enabled:false} //Unshow the timing
+		   };
+		   var yAxis = {
+			  title: {
+				 text: 'Degree Celsius (°C)'
+			  },
+			  minorGridLineWidth: 0,
+			  gridLineWidth: 0,
+			  plotLines: [{
+				 value: 0,
+				 width: 1,
+				 color: '#808080'
+			  }],
+			  //Assigns colors for plot bands.
+			  plotBands: [{ // Light tmp
+            from: 0.3,
+            to: 15,
+            color: 'rgba(68, 170, 213, 0.1)',
+            label: {
+                text: 'Light tmp',
+                style: {
+                    color: '#606060'
+                }
+            }
+        }, { // Light tmp
+            from: 15,
+            to: 16.5,
+            color: 'rgba(0, 0, 0, 0)',
+            label: {
+                text: 'Light tmp',
+                style: {
+                    color: '#606060'
+                }
+            }
+        }, { // Gentle tmp
+            from: 16.5,
+            to: 17.5,
+            color: 'rgba(68, 170, 213, 0.1)',
+            label: {
+                text: 'Gentle tmp',
+                style: {
+                    color: '#4d79ff'
+                }
+            }
+        }, { // Moderate tmp
+            from: 17.5,
+            to: 18.5,
+            color: 'rgba(230, 179, 255, 0.3)',
+            label: {
+                text: 'Moderate tmp',
+                style: {
+                    color: '#e600ac'
+                }
+            }
+        }, { // Fresh tmp
+            from: 18.5,
+            to: 19.5,
+            color: 'rgba(255, 77, 148, 0.4)',
+            label: {
+                text: 'Fresh tmp',
+                style: {
+                    color: '#ff4d4d'
+                }
+            }
+        }, { // Hot tmp
+            from: 19.5,
+            to: 20.5,
+            color: 'rgba(204, 0, 82, 0.4)',
+            label: {
+                text: 'Hot tmp',
+                style: {
+                    color: '#4d001f'
+                }
+            }
+        }, { // Ex Hot tmp
+            from: 20.5,
+            to: 21.5,
+            color: 'rgba(153, 0, 0, 0.5)',
+            label: {
+                text: 'Ex Hot tmp',
+                style: {
+                    color: '#660022'
+                }
+            }
+        }, { // Hot Hot tmp
+            from: 21.5,
+            to: 22.5,
+            color: 'rgba(204, 0, 82, 0.4)',
+            label: {
+                text: 'Hot Hot tmp',
+                style: {
+                    color: '#660066'
+                }
+            }
+        },{ // H.Hot tmp
+            from: 22.5,
+            to: 23.5,
+            color: 'rgba(153, 0, 0, 0.3)',
+            label: {
+                text: 'H.Hot tmp',
+                style: {
+                    color: '#606060'
+                }
+            }
+        }, { // H2.Hot tmp
+            from: 23.5,
+            to: 24.5,
+            color: 'rgba(204, 0, 82, 0.4)',
+            label: {
+                text: 'H2.Hot tmp',
+                style: {
+                    color: '#606060'
+                }
+            }
+        }, { // H3.Hot tmp
+            from: 24.5,
+            to: 25.5,
+            color: 'rgba(204, 0, 82, 0.5)',
+            label: {
+                text: 'H3.Hot tmp',
+                style: {
+                    color: '#4d79ff'
+                }
+            }
+        }, { // H4.Hot tmp
+            from: 25.5,
+            to: 26.5,
+            color: 'rgba(230, 179, 255, 0.8)',
+            label: {
+                text: 'H4.Hot tmp',
+                style: {
+                    color: '#e600ac'
+                }
+            }
+        }]
+		   };
+		   //Hover details box
+		   var tooltip = {
+			  formatter: function () {
+			  return '<b>' + Highcharts.numberFormat(this.y, 2) + "°C" + '</b><br/>' +
+				 Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' 
+			  }
+		   };
+		   var plotOptions = {
+			  spline: {
+				lineWidth: 4,
+				color: 'rgba(136, 77, 255, 0.2)',
+				states: {
+					hover: {
+						lineWidth: 5
+					}
+				},
+				marker: {
+					enabled: false
+				},
+				pointInterval: 3600000
+			 }
+		   };
+		   var legend = {
+			  enabled: false
+		   };
+		   var exporting = {
+			  enabled: false
+		   };
+		   
+		    //#######--------------------------2nd CHART--------------------------#######//
+		    //Humidity chart
+		    var setupSecondChart = function() {
+		    var humChart = {
+					type: 'gauge',
+					plotBackgroundColor: null,
+					plotBackgroundImage: null,
+					plotBorderWidth: 0,
+					plotShadow: false
+		    };
+			
+		    var humTitle = {
+			    text: 'Pi Humidity'   
+		    };   
+				 
+			var humPane = {
+					startAngle: -150,
+					endAngle: 150,
+					background: [{
+						backgroundColor: {
+							linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+							stops: [
+								[0, '#FFF'],
+								[1, '#333']
+							]
+						},
+						borderWidth: 0,
+						outerRadius: '109%'
+					}, {
+						backgroundColor: {
+							linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+							stops: [
+								[0, '#333'],
+								[1, '#FFF']
+							]
+						},
+						borderWidth: 1,
+						outerRadius: '107%'
+					}, {
+						// default background
+					}, {
+						backgroundColor: '#DDD',
+						borderWidth: 0,
+						outerRadius: '105%',
+						innerRadius: '103%'
+					}]
+				};
+				
+
+		    var humYAxis = {
+					//Set area = 0-50
+					min: 0,
+					max: 50, 
+					//Format the shorter tick
+					minorTickInterval: 'auto', 
+					minorTickWidth: 1,
+					minorTickLength: 5,
+					minorTickPosition: 'inside',
+					minorTickColor: '#e6004c',
+					//Format the longer tick
+					tickPixelInterval: 30,    
+					tickWidth: 2,
+					tickPosition: 'inside',
+					tickLength: 15,
+					tickColor: '#e6004c',
+					labels: {
+						step: 3,
+						rotation: 'auto'
+					},
+					title: {
+						text: 'Humidity (%)'
+					},
+					plotBands: [{
+						from: 0,
+						to: 20,
+						color: '#99ccff' // ok
+					}, {
+						from: 20,
+						to: 35,
+						color: '#ff4d88' // medium
+					}, {
+						from: 35,
+						to: 50,
+						color: '#990033' // too much
+					}]
+		   };
+			//Series_Humidity
+			humiditySeries = [{
+				name: 'Humidity %',
+				data: [humidityData[humidityData.length-1]], //humidityData[humidityData.length-1],localDataHumidity[localDataHumidity.length-1],
+				humTooltip: {
+					valueSuffix: '% Used'
+				}
+			}]
+			//Json_Humidity
+			var humJson = {}; 
+			humJson.chart = humChart; 
+			humJson.title = humTitle; 
+			humJson.yAxis = humYAxis; 
+			humJson.series = humiditySeries;
+			//Container_Humidity
+			$('#containerHumidity').highcharts(humJson);
+			}
+			
+			//#######--------------------------3rd CHART--------------------------#######//
+		    //Button chart
+		    var setupThirdChart = function() {
+				var butChart = {
+					plotBackgroundColor: null,
+					plotBorderWidth: null,
+					plotShadow: false
+				};
+				var butTitle = {
+  				   text: 'Pi Button Status'   
+			    };
+				var butYAxis = {
+					title: {
+						text: 'Button (on/off)'
+					}
+				};
+				var butPlotOptions = {
+					pie: {
+						
+						allowPointSelect: true, //KEEP
+						cursor: 'pointer', //KEEP
+						//
+						dataLabels: {
+							enabled: true,
+							format: '<b>{point.name}</b><br>{point.percentage:.1f} %', //words on pie 50%
+							//
+							distance: -50
+							/*
+							filter: {
+								property: 'percentage',
+								operator: '>',
+								value: 4
+							}*/
+						}
+					}
+				};
+				//Series_Button
+				buttonSeries = [{
+					type: 'bar',
+					name: 'Button status ',
+					data: buttonData
+				}]
+				//Json_Button
+				var butJson = {}; 
+				butJson.chart = butChart; 
+				butJson.title = butTitle; 
+				butJson.yAxis = butYAxis;
+				butJson.series = buttonSeries;
+				butJson.plotOptions = butPlotOptions;
+					
+				//Container_Button
+				$('#containerButton').highcharts(butJson);
+			}
+			
+			//#######--------------------------4th CHART--------------------------#######//
+		    //LED chart
+			var setupFourthChart = function() {
+		    var ledChart = {
+					zoomType: 'x'
+		    };
+		    var ledTitle = {
+			    text: 'Pi LED'   
+		    };   
+			var ledXAxis = {
+				type: 'datetime',
+				tickPixelInterval: 150,
+				labels: {enabled:false} //Unshow the timing
+			};
+		    var ledYAxis = {
+				title: {
+					text: 'LED (on/off)'
+				}
+		    };
+		    var ledPlotOptions = {
+				//Format the gradient color
+				area: {
+					fillColor: {
+						linearGradient: {
+							x1: 0,
+							y1: 0,
+							x2: 0,
+							y2: 1
+						},
+						stops: [
+							[0, Highcharts.getOptions().colors[5]],
+							[1, Highcharts.Color(Highcharts.getOptions().colors[4]).setOpacity(0).get('rgba')]
+						]
+					},
+					marker: {
+						radius: 2
+					},
+					lineWidth: 1,
+					states: {
+						hover: {
+							lineWidth: 1
+						}
+					},
+					threshold: null
+				}
+		    };
+			
+			var ledTooltip = {
+				formatter: function () {
+					return '<b>' + Highcharts.numberFormat(this.y, 2)  + "%" + '</b><br/>' +
+					Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' 
+				}
+			}; 
+			 //Series_Humidity
+			ledSeries = [{
+				type: 'area',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				name: 'LED %',
+				data: ledData, 
+				tooltip: {
+					valueSuffix: '% Used'
+				}
+			}]
+			//Json_Humidity
+			var ledJson = {}; 
+			ledJson.chart = ledChart; 
+			ledJson.title = ledTitle; 
+			ledJson.tooltip = ledTooltip;
+			ledJson.xAxis = ledXAxis;
+			ledJson.yAxis = ledYAxis; 
+			ledJson.series = ledSeries;
+			ledJson.plotOptions = ledPlotOptions;
+				
+			//Container_Humidity
+			$('#containerLed').highcharts(ledJson);
+			}
+			
+			//#######-------------END OF CHARTS-------------#######//
+			//Declare the series
+		    var temperatureSeries = []
+		    var humiditySeries = []
+			var buttonSeries = []
+			var ledSeries = []
+
+			//Gathers all dweets to display
+			dweetio.get_all_dweets_for(name, function(err, dweets){
+				Highcharts.setOptions({
+				  global: {
+					 useUTC: false
+				  }
+			    });
+				
+			    console.log(err) //Test
+				
+				for(theDweet in dweets.reverse())
+				{
+					var dweet = dweets[theDweet];
+					
+					//Dweet's variables' names
+					val = dweet.content["Temperature"]
+					val2 = dweet.content["Humidity"]
+					val3 = dweet.content["Button"]
+					val4 = dweet.content["LED"]
+					
+					//Add the vals to created arrayDatas
+					temperatureData.push(parseInt(val))
+					humidityData.push(parseInt(val2))
+					buttonData.push(val3)
+					ledData.push(val4)
+					
+					array_for_cats.push(dweet.created)
+				}
+				
+				//Call other charts
+			    setupSecondChart();
+				setupThirdChart();
+				setupFourthChart();
+				
+				//Series_Temperature
+				temperatureSeries= [{
+				  name: 'Live data',
+				  data: temperatureData   
+			    }]
+				
+				//Json_Temperature
+			    var temJson = {};   
+			    temJson.chart = temChart; 
+			    temJson.title = title;     
+			    temJson.tooltip = tooltip;
+			    temJson.xAxis = xAxis;
+			    temJson.yAxis = yAxis; 
+			    temJson.legend = legend;  
+			    temJson.exporting = exporting;   
+			    temJson.series = temperatureSeries;
+			    temJson.plotOptions = plotOptions;
+				
+			    //Container_Temperature
+			    $('#containerTemperature').highcharts(temJson);
+				temChart = $('#containerTemperature').highcharts();
+				
+				//Update the timing
+				temChart.xAxis[0].update({categories: array_for_cats}, true);
+			   
+			});
+			  
+			//Listen to new data
+			dweetio.listen_for(name, function(dweet){
+					
+					//Test
+					console.log("happened")
+
+					//Stores
+					val = dweet.content["Temperature"]
+					val2 = dweet.content["Humidity"]
+					val3 = dweet.content["Button"]
+					val4 = dweet.content["LED"]
+					
+					//Recreate the chart (update)
+					var temChart = $('#containerTemperature').highcharts();
+					var humChart = $('#containerHumidity').highcharts();
+					var butChart = $('#containerButton').highcharts();
+					var ledChart = $('#containerLed').highcharts();
+					
+					temChart.series[0].addPoint(val);  
+					humChart.series[0].addPoint(val2);  
+					butChart.series[0].addPoint(val3);
+					ledChart.series[0].addPoint(val4);
+					
+					//Call the local storage here
+					htmlStorage()
+			});
+			
+			//HTML5 local storage
+			//Reference http://www.w3school.com.cn/html/html5_webstorage.asp
+			//Reference https://github.com/niallc95/SensorReadingScript/tree/master/Web
+			var htmlStorage = function(){
+				//Check if the browser supports HTML Storage
+				if(typeof(Storage) !== "undefined"){
+					//Test
+					console.log("Local storage supported");
+					//
+					localDataTemperature = JSON.parse(localStorage.getItem("Temperature"));
+					localDataHumidity = JSON.parse(localStorage.getItem("Humidity"));
+					localDataButton = JSON.parse(localStorage.getItem("Button"));
+					localDataLed = JSON.parse(localStorage.getItem("Led"));
+					
+					//Create array to store data
+					var storeDataTemperature = []
+					var storeDataHumidity = []
+					var storeDataButton = []
+					var storeDataLed = []
+					
+					//Check and store data into array storeData
+					storeDataTemperature = store(localDataTemperature, storeDataTemperature, temperatureData);
+					storeDataHumidity = store(localDataHumidity, storeDataHumidity, humidityData);
+					storeDataButton = store(localDataButton, storeDataButton, buttonData);
+					storeDataLed = store(localDataLed, storeDataLed, ledData);
+					
+					//Check if the length of the data >100
+					checkLength(storeDataTemperature);					
+					checkLength(storeDataHumidity);		
+					checkLength(storeDataButton);
+					checkLength(storeDataLed);
+					
+					//Add the items into the arrays
+					localStorage.setItem("Temperature", JSON.stringify(storeDataTemperature));
+					localStorage.setItem("Humidity", JSON.stringify(storeDataHumidity));
+					localStorage.setItem("Button", JSON.stringify(storeDataButton));
+					localStorage.setItem("Led", JSON.stringify(storeDataLed));
+					
+					//Testing
+					console.log("Temperature " + JSON.stringify(storeDataTemperature) + " stored successfully." + "\n" +
+								"Humidity " + JSON.stringify(storeDataHumidity) + " stored successfully." + "\n" +
+								"Button " + JSON.stringify(storeDataButton) + " stored successfully." + "\n" +
+								"Led " + JSON.stringify(storeDataLed) + " stored successfully.")
+				}else{
+					alert("HTML local storage not supported. Please update your browser.");
+				}
+			}
+			
+			//LocalStorageFunction_Check if null_Store latest data into storeDataArrays
+			function store(localData, storeData, dweetData){
+				if(localData != null && localData.length > 0){
+					return storeData = localData.concat(dweetData);
+				}else{
+					return storeData = dweetData;
+				}
+			}
+			
+			//LocalStorageFunction_Check if length exceed 100_Delete the exceed data	
+			function checkLength(storeData){
+				while(storeData.length > 100){
+					storeData.shift();
+				}
+			}
+		});
+	</script>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</body>
+</html>
